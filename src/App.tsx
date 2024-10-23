@@ -19,8 +19,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      <header className="bg-blue-600 text-white p-4">
-        <h1 className="text-2xl font-bold">CSV Data Analysis Dashboard</h1>
+      <header className="bg-white shadow-md p-4">
+        <h1 className="text-2xl font-bold text-black text-center">CSV Data Analysis Dashboard</h1>
       </header>
       <main className="container mx-auto p-4">
         <section className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -34,6 +34,10 @@ function App() {
       </main>
     </div>
   );
+
+  
 }
+
+
 
 export default App;
