@@ -1,26 +1,32 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { toast } from 'sonner';
+
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 
 interface CSVUploaderProps {
   onUpload: (data: Array<Record<string, string>>, headers: string[]) => void;
+  setCSVData: (data: Array<Record<string, string>>) => void;
+  setHeaders: (headers: string[]) => void;
 }
 
-const CSVUploader: React.FC<CSVUploaderProps> = ({ onUpload }) => {
+const CSVUploader: React.FC<CSVUploaderProps> = ({ onUpload, setCSVData, setHeaders }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const onDrop = (acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
     if (file) {
       setIsLoading(true);
       setError(null);
-      setSuccessMessage(null); // Reiniciar el mensaje de éxito
+      setUploadedFileName(file.name);
+
       const fileExtension = file.name.split('.').pop()?.toLowerCase();
 
       if (fileExtension === 'csv') {
-        Papa.parse(file, {
+        Papa.parse<Record<string, string>>(file, {
           complete: (result) => {
             if (result.errors.length > 0) {
               console.error('CSV parsing errors:', result.errors);
@@ -28,21 +34,22 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUpload }) => {
               setIsLoading(false);
               return;
             } else {
-              const headers = Object.keys(result.data[0]);
               const data = result.data as Array<Record<string, string>>;
+              const headers = Object.keys(result.data[0]);
+
               if (Array.isArray(headers) && headers.length > 0) {
                 onUpload(data, headers);
-                setSuccessMessage('El archivo se ha procesado correctamente.'); // Mensaje de éxito
+                toast.success('El archivo se ha procesado correctamente');
               } else {
                 setError('Parsed headers are not an array or are empty.');
               }
             }
-            setIsLoading(false); // Asegúrate de detener la carga aquí
+            setIsLoading(false);
           },
           header: true,
           skipEmptyLines: true,
           delimiter: ',',
-          error: (error) => {
+          error: (error: Error) => {
             console.error('CSV parsing error:', error);
             setError('Error parsing CSV file. Please check the console for details.');
             setIsLoading(false);
@@ -70,7 +77,7 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUpload }) => {
                 return obj;
               });
               onUpload(formattedData, headers);
-              setSuccessMessage('El archivo se ha procesado correctamente.'); // Mensaje de éxito
+              toast.success('El archivo se ha procesado correctamente');
             } else {
               setError('Parsed headers are not an array or are empty.');
             }
@@ -78,7 +85,7 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUpload }) => {
             console.error('Excel parsing error:', error);
             setError('Error parsing Excel file. Please check the console for details.');
           } finally {
-            setIsLoading(false); // Detener la carga aquí también
+            setIsLoading(false);
           }
         };
         reader.onerror = () => {
@@ -94,50 +101,100 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUpload }) => {
     }
   };
 
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: { 'text/csv': ['.csv'], 'application/vnd.ms-excel': ['.xls', '.xlsx'] },
+    maxFiles: 1,
+  });
+
+  const handleRemoveFile = () => {
+    setUploadedFileName(null);
+    setCSVData([]);
+    setHeaders([]);
+    toast.info('Archivo eliminado');
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center w-full">
-      <label
-        htmlFor="dropzone-file"
-        className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
-      >
-        <div className="flex flex-col items-center justify-center pt-5 pb-6">
-          <svg
-            className="w-10 h-10 mb-3 text-gray-400"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-            ></path>
-          </svg>
-          <p className="mb-2 text-sm text-gray-500">
-            <span className="font-semibold">Click to upload</span> or drag and drop
-          </p>
-          <p className="text-xs text-gray-500">CSV or Excel file (MAX. 10MB)</p>
+    <div className="w-full">
+      {!uploadedFileName ? (
+        <div
+          {...getRootProps()}
+          className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
+        >
+          <input {...getInputProps()} />
+          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+            <svg
+              className="w-10 h-10 mb-3 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+              ></path>
+            </svg>
+            {isDragActive ? (
+              <p className="text-sm text-gray-500">Suelta el archivo aquí...</p>
+            ) : (
+              <>
+                <p className="mb-2 text-sm text-gray-500">
+                  <span className="font-semibold">Click to upload</span> or drag and drop
+                </p>
+                <p className="text-xs text-gray-500">CSV or Excel file (MAX. 10MB)</p>
+              </>
+            )}
+          </div>
         </div>
-        <input
-          id="dropzone-file"
-          type="file"
-          className="hidden"
-          accept=".csv,.xlsx,.xls"
-          onChange={handleFileUpload}
-          disabled={isLoading}
-        />
-      </label>
+      ) : (
+        <div className="relative w-full h-64 bg-gray-100 rounded-lg p-4">
+          <div className="flex flex-col items-center justify-center h-full">
+            <svg
+              className="w-12 h-12 text-green-500 mb-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M9 12l2 2l4 -4"
+              ></path>
+            </svg>
+            <p className="text-sm text-gray-500">{uploadedFileName}</p>
+            <p className="text-xs text-gray-500">Archivo subido con éxito</p>
+          </div>
+          <button
+            className="absolute top-4 right-4 bg-red-500 text-white p-2 rounded-full hover:bg-red-600"
+            onClick={handleRemoveFile}
+          >
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
+            </svg>
+          </button>
+        </div>
+      )}
+
       {isLoading && (
         <div className="mt-4 text-center">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
-          <p className="mt-2 text-gray-600">Processing file...</p>
-        </div>
-      )}
-      {successMessage && (
-        <div className="mt-4 text-center text-green-500">
-          {successMessage}
+          <p className="mt-2 text-gray-600">Procesando archivo...</p>
         </div>
       )}
       {error && (
