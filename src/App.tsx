@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Upload } from 'lucide-react';
+
 import CSVUploader from './components/CSVUploader';
 import Dashboard from './components/Dashboard';
-import { sampleData, sampleHeaders } from './sampleData';
+import { sampleData, sampleHeaders } from './constants/sampleData';
 
 function App() {
   const [csvData, setCSVData] = useState<Array<Record<string, string>>>(sampleData);
@@ -27,15 +28,18 @@ function App() {
           <h2 className="text-xl font-semibold mb-4 flex items-center">
             <Upload className="mr-2" /> Upload CSV File
           </h2>
-          <CSVUploader onUpload={handleCSVUpload} />
+          <CSVUploader
+            setCSVData={setCSVData}
+            setHeaders={setHeaders}
+            onUpload={handleCSVUpload} />
         </section>
-        
+
         <Dashboard data={csvData} headers={headers} />
       </main>
     </div>
   );
 
-  
+
 }
 
 
