@@ -1,72 +1,71 @@
-
 # Data-Analysis-Dashboard
 
-Aplicación de análisis de datos en formato CSV, construida con React y TypeScript, utilizando Vite como herramienta de construcción.
+Data analysis application for CSV files, built with React and TypeScript, using Vite as the build tool.
 
-## Descripción
+## Description
 
-Este proyecto permite a los usuarios cargar archivos CSV o Excel, visualizar los datos en tablas y gráficos, y realizar análisis estadísticos. La aplicación está diseñada para ser intuitiva y fácil de usar, proporcionando una interfaz limpia y moderna.
+This project allows users to upload CSV or Excel files, view the data in tables and charts, and perform statistical analysis. The application is designed to be intuitive and easy to use, providing a clean and modern interface.
 
-## Características
+## Features
 
-- Carga de archivos CSV y Excel.
-- Visualización de datos en tablas dinámicas.
-- Gráficos interactivos utilizando Chart.js.
-- Análisis estadísticos básicos (media, mediana, desviación estándar).
-- Interfaz de usuario responsiva y amigable.
+- Upload CSV and Excel files.
+- Display data in dynamic tables.
+- Interactive charts using Chart.js.
+- Basic statistical analysis (mean, median, standard deviation).
+- Responsive and user-friendly interface.
 
-## Tecnologías Utilizadas
+## Technologies Used
 
-- **React**: Biblioteca de JavaScript para construir interfaces de usuario.
-- **TypeScript**: Superset de JavaScript que añade tipado estático.
-- **Vite**: Herramienta de construcción rápida para proyectos de frontend.
-- **Tailwind CSS**: Framework CSS para diseño moderno y responsivo.
-- **Chart.js**: Biblioteca para crear gráficos interactivos.
-- **PapaParse**: Biblioteca para analizar archivos CSV.
-- **xlsx**: Biblioteca para manejar archivos Excel.
+- **React**: JavaScript library for building user interfaces.
+- **TypeScript**: A superset of JavaScript that adds static typing.
+- **Vite**: Fast build tool for frontend projects.
+- **Tailwind CSS**: CSS framework for modern, responsive design.
+- **Chart.js**: Library for creating interactive charts.
+- **PapaParse**: Library for parsing CSV files.
+- **xlsx**: Library for handling Excel files.
 
-## Instalación
+## Installation
 
-1. Clona el repositorio:
+1. Clone the repository:
    ```bash
-   git clone https://github.com/tu_usuario/data-analysis-dashboard.git
+   git clone https://github.com/your_username/data-analysis-dashboard.git
    cd data-analysis-dashboard
    ```
 
-2. Instala las dependencias:
+2. Install dependencies:
    ```bash
    npm install
    ```
 
-## Uso
+## Usage
 
-Para iniciar la aplicación en modo de desarrollo, ejecuta el siguiente comando:
+To start the application in development mode, run:
    ```bash
    npm run dev
    ```
-Esto abrirá la aplicación en `http://localhost:3000` (o el puerto que se indique en la consola).
+This will open the application at `http://localhost:3000` (or the port indicated in the console).
 
-### Comandos disponibles
+### Available Commands
 
-- `npm run dev`: Inicia el servidor de desarrollo
-- `npm run build`: Compila la aplicación para producción
-- `npm run preview`: Muestra la aplicación compilada en modo de producción
-- `npm run lint`: Ejecuta ESLint para verificar el código
+- `npm run dev`: Starts the development server
+- `npm run build`: Builds the application for production
+- `npm run preview`: Previews the production build
+- `npm run lint`: Runs ESLint to check the code
 
-## Contribuciones
+## Contributions
 
-Las contribuciones son bienvenidas. Si deseas contribuir, por favor sigue estos pasos:
+Contributions are welcome. If you'd like to contribute, please follow these steps:
 
-1. Haz un fork del proyecto.
-2. Crea una nueva rama (`git checkout -b feature/nueva-caracteristica`)
-3. Realiza tus cambios y haz un commit (`git commit -m 'Añadir nueva característica'`)
-4. Haz push a la rama (`git push origin feature/nueva-caracteristica`)
-5. Abre un Pull Request
+1. Fork the project.
+2. Create a new branch (`git checkout -b feature/new-feature`)
+3. Make your changes and commit them (`git commit -m 'Add new feature'`)
+4. Push to the branch (`git push origin feature/new-feature`)
+5. Open a Pull Request
 
-## Licencia
+## License
 
-Este proyecto está bajo la Licencia MIT. Consulta el archivo [LICENSE](LICENSE) para más detalles.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
 
-## Contacto
+## Contact
 
-Para más información, puedes contactar a juansebastianquinterofernandez@gmail.com
+For more information, you can contact juansebastianquinterofernandez@gmail.com
