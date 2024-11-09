@@ -5,6 +5,7 @@ import DynamicChart from './DynamicChart';
 import LineDynamicGraph from './LineDynamicGraph';
 import StackedDynamicAreaChart from './StackedDynamicAreaChart';
 import { GripVertical } from 'lucide-react';
+import Modal from './Modal';
 
 interface DashboardProps {
   data: Array<Record<string, string>>;
@@ -17,6 +18,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, headers }) => {
   const [widgets, setWidgets] = useState<{ id: string; type: string; title: string }[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
   const swapyRef = useRef<any>(null);
+  const [modalContent, setModalContent] = useState<{ isOpen: boolean; type: string; title: string } | null>(null);
 
   useEffect(() => {
     const savedWidgets = localStorage.getItem('dashboardWidgets');
@@ -146,15 +148,36 @@ const Dashboard: React.FC<DashboardProps> = ({ data, headers }) => {
                   </div>
                   <h3 className="font-medium text-gray-700">{widget.title}</h3>
                 </div>
-                <button
-                  onClick={() => {
-                    const newWidgets = widgets.filter(w => w.id !== widget.id);
-                    setWidgets(newWidgets);
-                  }}
-                  className="ml-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition-colors"
-                >
-                  Remove
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setModalContent({ isOpen: true, type: widget.type, title: widget.title })}
+                    className="bg-blue-500 text-white p-1.5 rounded hover:bg-blue-600 transition-colors"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+                      />
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => {
+                      const newWidgets = widgets.filter(w => w.id !== widget.id);
+                      setWidgets(newWidgets);
+                    }}
+                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition-colors"
+                  >
+                    Remove
+                  </button>
+                </div>
               </div>
               <div className="p-4 h-[300px] overflow-auto widget-content">
                 {widget.type === 'table' && (
@@ -170,6 +193,25 @@ const Dashboard: React.FC<DashboardProps> = ({ data, headers }) => {
           </div>
         ))}
       </div>
+
+      {modalContent && (
+        <Modal
+          isOpen={modalContent.isOpen}
+          onClose={() => setModalContent(null)}
+          title={modalContent.title}
+        >
+          <div className="h-full">
+            {modalContent.type === 'table' && (
+              <div className="h-full overflow-auto">
+                <DynamicTable data={data} xAxis={xAxis} yAxis={yAxis} />
+              </div>
+            )}
+            {modalContent.type === 'chart' && <DynamicChart data={data} xAxis={xAxis} yAxis={yAxis} />}
+            {modalContent.type === 'line' && <LineDynamicGraph data={data} xAxis={xAxis} yAxis={yAxis} />}
+            {modalContent.type === 'stackedArea' && <StackedDynamicAreaChart data={data} xAxis={xAxis} yAxis={yAxis} />}
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };
