@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { createSwapy } from 'swapy';
 import DynamicTable from './DynamicTable';
 import DynamicChart from './DynamicChart';
@@ -26,6 +26,10 @@ const Dashboard: React.FC<DashboardProps> = ({ data, headers }) => {
   }, []);
 
   useEffect(() => {
+    localStorage.setItem('dashboardWidgets', JSON.stringify(widgets));
+  }, [widgets]);
+
+  useEffect(() => {
     if (containerRef.current && widgets.length > 0) {
       if (swapyRef.current) {
         swapyRef.current.enable(false);
@@ -33,22 +37,31 @@ const Dashboard: React.FC<DashboardProps> = ({ data, headers }) => {
       }
       
       const swapyInstance = createSwapy(containerRef.current, {
-        animation: 'none'
+        animation: 'none',
+        handle: '[data-swapy-handle]',
+        dragThreshold: 5,
+        debounce: 10,
+        resistance: 0
       });
 
+      let timeoutId: NodeJS.Timeout;
       swapyInstance.onSwap((event: any) => {
-        const newOrder = event.data.array
-          .map((item: { item: string }) => widgets.find(w => w.id === item.item))
-          .filter(Boolean);
-        
-        if (newOrder.length === widgets.length) {
-          setWidgets(newOrder);
-        }
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => {
+          const newOrder = event.data.array
+            .map((item: { item: string }) => widgets.find(w => w.id === item.item))
+            .filter(Boolean);
+          
+          if (newOrder.length === widgets.length) {
+            setWidgets(newOrder);
+          }
+        }, 50);
       });
 
       swapyRef.current = swapyInstance;
 
       return () => {
+        clearTimeout(timeoutId);
         if (swapyRef.current) {
           swapyRef.current.enable(false);
           swapyRef.current = null;
@@ -56,10 +69,6 @@ const Dashboard: React.FC<DashboardProps> = ({ data, headers }) => {
       };
     }
   }, [widgets.length]);
-
-  useEffect(() => {
-    localStorage.setItem('dashboardWidgets', JSON.stringify(widgets));
-  }, [widgets]);
 
   const addWidget = (type: string) => {
     if (!type) return;
@@ -83,9 +92,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, headers }) => {
             className="w-full p-2 border rounded-md"
           >
             {headers.map((header) => (
-              <option key={header} value={header}>
-                {header}
-              </option>
+              <option key={header} value={header}>{header}</option>
             ))}
           </select>
         </div>
@@ -99,9 +106,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, headers }) => {
             className="w-full p-2 border rounded-md"
           >
             {headers.map((header) => (
-              <option key={header} value={header}>
-                {header}
-              </option>
+              <option key={header} value={header}>{header}</option>
             ))}
           </select>
         </div>
@@ -123,12 +128,12 @@ const Dashboard: React.FC<DashboardProps> = ({ data, headers }) => {
         </div>
       </div>
 
-      <div ref={containerRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div ref={containerRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {widgets.map((widget, index) => (
           <div
             key={widget.id}
             data-swapy-slot={`slot-${index}`}
-            className="bg-white border rounded-lg shadow-sm hover:shadow-md transition-shadow h-full"
+            className="bg-white border rounded-lg shadow-sm hover:shadow-md transition-shadow"
           >
             <div
               data-swapy-item={widget.id}
@@ -136,8 +141,8 @@ const Dashboard: React.FC<DashboardProps> = ({ data, headers }) => {
             >
               <div className="p-3 border-b bg-gray-50 rounded-t-lg flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <div data-swapy-handle>
-                    <GripVertical className="text-gray-400 cursor-move" />
+                  <div data-swapy-handle className="touch-none cursor-move">
+                    <GripVertical className="text-gray-400" />
                   </div>
                   <h3 className="font-medium text-gray-700">{widget.title}</h3>
                 </div>
@@ -151,8 +156,12 @@ const Dashboard: React.FC<DashboardProps> = ({ data, headers }) => {
                   Remove
                 </button>
               </div>
-              <div className="p-4 flex-1">
-                {widget.type === 'table' && <DynamicTable data={data} xAxis={xAxis} yAxis={yAxis} />}
+              <div className="p-4 h-[300px] overflow-auto widget-content">
+                {widget.type === 'table' && (
+                  <div className="table-wrapper">
+                    <DynamicTable data={data} xAxis={xAxis} yAxis={yAxis} />
+                  </div>
+                )}
                 {widget.type === 'chart' && <DynamicChart data={data} xAxis={xAxis} yAxis={yAxis} />}
                 {widget.type === 'line' && <LineDynamicGraph data={data} xAxis={xAxis} yAxis={yAxis} />}
                 {widget.type === 'stackedArea' && <StackedDynamicAreaChart data={data} xAxis={xAxis} yAxis={yAxis} />}

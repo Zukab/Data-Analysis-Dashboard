@@ -50,39 +50,41 @@ const DynamicTable: React.FC<DynamicTableProps> = ({ data, xAxis, yAxis }) => {
   const displayedData = showAll ? tableData : tableData.slice(0, 7);
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full bg-white">
-        <thead>
-          <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
-            <th className="py-3 px-6 text-left">{xAxis}</th>
-            <th className="py-3 px-6 text-left">Sum</th>
-            <th className="py-3 px-6 text-left">Avg</th>
-            <th className="py-3 px-6 text-left">Min</th>
-            <th className="py-3 px-6 text-left">Max</th>
-            <th className="py-3 px-6 text-left">Count</th>
-            <th className="py-3 px-6 text-left">Median</th>
-            <th className="py-3 px-6 text-left">Mode</th>
-          </tr>
-        </thead>
-        <tbody className="text-gray-600 text-sm font-light">
-          {displayedData.map((row, index) => (
-            <tr key={index} className="border-b border-gray-200 hover:bg-gray-100">
-              <td className="py-3 px-6 text-left whitespace-nowrap">{row.key}</td>
-              <td className="py-3 px-6 text-left whitespace-nowrap">{row.sum.toFixed(2)}</td>
-              <td className="py-3 px-6 text-left whitespace-nowrap">{row.avg.toFixed(2)}</td>
-              <td className="py-3 px-6 text-left whitespace-nowrap">{row.min.toFixed(2)}</td>
-              <td className="py-3 px-6 text-left whitespace-nowrap">{row.max.toFixed(2)}</td>
-              <td className="py-3 px-6 text-left whitespace-nowrap">{row.count}</td>
-              <td className="py-3 px-6 text-left whitespace-nowrap">{row.median.toFixed(2)}</td>
-              <td className="py-3 px-6 text-left whitespace-nowrap">{row.mode}</td>
+    <div className="flex flex-col h-full">
+      <div className="table-container flex-1">
+        <table className="min-w-full bg-white table-fixed">
+          <thead className="sticky top-0 bg-gray-200 z-10">
+            <tr className="text-gray-600 uppercase text-sm leading-normal">
+              <th className="py-3 px-6 text-left w-1/8">{xAxis}</th>
+              <th className="py-3 px-6 text-left w-1/8">Sum</th>
+              <th className="py-3 px-6 text-left w-1/8">Avg</th>
+              <th className="py-3 px-6 text-left w-1/8">Min</th>
+              <th className="py-3 px-6 text-left w-1/8">Max</th>
+              <th className="py-3 px-6 text-left w-1/8">Count</th>
+              <th className="py-3 px-6 text-left w-1/8">Median</th>
+              <th className="py-3 px-6 text-left w-1/8">Mode</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-      <div className="mt-4">
+          </thead>
+          <tbody className="text-gray-600 text-sm">
+            {displayedData.map((row, index) => (
+              <tr key={index} className="border-b border-gray-200 hover:bg-gray-100">
+                <td className="py-3 px-6 text-left whitespace-nowrap">{row.key}</td>
+                <td className="py-3 px-6 text-left whitespace-nowrap">{row.sum.toFixed(2)}</td>
+                <td className="py-3 px-6 text-left whitespace-nowrap">{row.avg.toFixed(2)}</td>
+                <td className="py-3 px-6 text-left whitespace-nowrap">{row.min.toFixed(2)}</td>
+                <td className="py-3 px-6 text-left whitespace-nowrap">{row.max.toFixed(2)}</td>
+                <td className="py-3 px-6 text-left whitespace-nowrap">{row.count}</td>
+                <td className="py-3 px-6 text-left whitespace-nowrap">{row.median.toFixed(2)}</td>
+                <td className="py-3 px-6 text-left whitespace-nowrap">{row.mode}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="mt-4 text-center">
         <button
           onClick={() => setShowAll(!showAll)}
-          className="text-blue-500 hover:underline"
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
         >
           {showAll ? 'Show Less' : 'Show All Rows'}
         </button>
