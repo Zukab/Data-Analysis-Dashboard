@@ -33,7 +33,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, headers }) => {
       }
       
       const swapyInstance = createSwapy(containerRef.current, {
-        animation: 'spring'
+        animation: 'none'
       });
 
       swapyInstance.onSwap((event: any) => {
@@ -123,16 +123,16 @@ const Dashboard: React.FC<DashboardProps> = ({ data, headers }) => {
         </div>
       </div>
 
-      <div ref={containerRef} className="space-y-4">
+      <div ref={containerRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {widgets.map((widget, index) => (
           <div
             key={widget.id}
             data-swapy-slot={`slot-${index}`}
-            className="bg-white border rounded-lg shadow-sm hover:shadow-md transition-shadow"
+            className="bg-white border rounded-lg shadow-sm hover:shadow-md transition-shadow h-full"
           >
             <div
               data-swapy-item={widget.id}
-              className="w-full"
+              className="w-full h-full flex flex-col"
             >
               <div className="p-3 border-b bg-gray-50 rounded-t-lg flex items-center justify-between">
                 <div className="flex items-center space-x-2">
@@ -151,7 +151,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, headers }) => {
                   Remove
                 </button>
               </div>
-              <div className="p-4">
+              <div className="p-4 flex-1">
                 {widget.type === 'table' && <DynamicTable data={data} xAxis={xAxis} yAxis={yAxis} />}
                 {widget.type === 'chart' && <DynamicChart data={data} xAxis={xAxis} yAxis={yAxis} />}
                 {widget.type === 'line' && <LineDynamicGraph data={data} xAxis={xAxis} yAxis={yAxis} />}

@@ -5,12 +5,14 @@
 @tailwind utilities;
 
 body {
-  font-family: 'Cabinet Grotesk', sans-serif; /* Aplicar la fuente a todo el cuerpo */
+  font-family: 'Cabinet Grotesk', sans-serif;
 }
+
 header {
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Estilos para Swapy */
 [data-swapy-highlighted] {
   background-color: rgba(59, 130, 246, 0.1);
   border: 2px dashed #3b82f6;
@@ -19,12 +21,37 @@ header {
 
 [data-swapy-handle] {
   cursor: move;
+  padding: 4px;
+  display: flex;
+  align-items: center;
 }
 
 [data-swapy-item] {
-  transition: transform 0.2s ease;
+  transition: none;
+  height: 100%;
 }
 
 [data-swapy-item]:active {
   cursor: grabbing;
+}
+
+/* Estilos adicionales para los widgets */
+.widget-container {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.widget-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Asegurar que los gráficos sean responsivos */
+.chart-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 250px;
 }
