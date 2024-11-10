@@ -151,29 +151,17 @@ const Dashboard: React.FC<DashboardProps> = ({ data, headers }) => {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setModalContent({ isOpen: true, type: widget.type, title: widget.title })}
-                    className="bg-blue-500 text-white p-1.5 rounded hover:bg-blue-600 transition-colors"
+                    className="text-gray-600 hover:text-blue-600 transition-colors text-sm"
                   >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
-                      />
-                    </svg>
+                    Expand
                   </button>
+                  <span className="text-gray-300">|</span>
                   <button
                     onClick={() => {
                       const newWidgets = widgets.filter(w => w.id !== widget.id);
                       setWidgets(newWidgets);
                     }}
-                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition-colors"
+                    className="text-gray-600 hover:text-red-600 transition-colors text-sm"
                   >
                     Remove
                   </button>
