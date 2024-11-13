@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 
 interface DynamicTableProps {
   data: Array<Record<string, string>>;
@@ -6,89 +7,153 @@ interface DynamicTableProps {
   yAxis: string;
 }
 
+interface TableData {
+  key: string;
+  sum: number;
+  avg: number;
+  min: number;
+  max: number;
+  count: number;
+  median: number;
+  mode: string;
+}
+
 const DynamicTable: React.FC<DynamicTableProps> = ({ data, xAxis, yAxis }) => {
   const [showAll, setShowAll] = useState(false);
-  const aggregatedData: Record<string, number[]> = {};
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof TableData | null;
+    direction: 'asc' | 'desc';
+  }>({ key: null, direction: 'asc' });
 
-  data.forEach((row) => {
-    const xValue = row[xAxis];
-    const yValue = parseFloat(row[yAxis]);
-    if (!isNaN(yValue)) {
-      if (!aggregatedData[xValue]) {
-        aggregatedData[xValue] = [];
+  const tableData = useMemo(() => {
+    const groupedData: Record<string, number[]> = {};
+    
+    // Agrupar datos
+    data.forEach((row) => {
+      const key = row[xAxis];
+      const value = parseFloat(row[yAxis]);
+      if (!isNaN(value)) {
+        if (!groupedData[key]) {
+          groupedData[key] = [];
+        }
+        groupedData[key].push(value);
       }
-      aggregatedData[xValue].push(yValue);
+    });
+
+    // Calcular estadísticas
+    const processedData: TableData[] = Object.entries(groupedData).map(([key, values]) => {
+      const sorted = [...values].sort((a, b) => a - b);
+      const mid = Math.floor(sorted.length / 2);
+      const mode = values.reduce((acc, val) => {
+        acc[val] = (acc[val] || 0) + 1;
+        return acc;
+      }, {} as Record<number, number>);
+
+      return {
+        key,
+        sum: values.reduce((a, b) => a + b, 0),
+        avg: values.reduce((a, b) => a + b, 0) / values.length,
+        min: Math.min(...values),
+        max: Math.max(...values),
+        count: values.length,
+        median: sorted.length % 2 === 0 
+          ? (sorted[mid - 1] + sorted[mid]) / 2
+          : sorted[mid],
+        mode: Object.entries(mode)
+          .sort(([,a], [,b]) => b - a)[0][0]
+      };
+    });
+
+    // Ordenar datos si hay configuración de ordenamiento
+    if (sortConfig.key) {
+      processedData.sort((a, b) => {
+        if (a[sortConfig.key!] < b[sortConfig.key!]) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (a[sortConfig.key!] > b[sortConfig.key!]) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
     }
-  });
 
-  const calculateStatistics = (values: number[]) => {
-    const sum = values.reduce((acc, val) => acc + val, 0);
-    const avg = sum / values.length;
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    const count = values.length;
+    return processedData;
+  }, [data, xAxis, yAxis, sortConfig]);
 
-    const sortedValues = [...values].sort((a, b) => a - b);
-    const median =
-      sortedValues.length % 2 === 0
-        ? (sortedValues[sortedValues.length / 2 - 1] + sortedValues[sortedValues.length / 2]) / 2
-        : sortedValues[Math.floor(sortedValues.length / 2)];
-
-    const mode = values.sort((a, b) =>
-      values.filter(v => v === a).length - values.filter(v => v === b).length
-    ).pop();
-
-    return { sum, avg, min, max, count, median, mode };
+  const handleSort = (key: keyof TableData) => {
+    setSortConfig({
+      key,
+      direction: 
+        sortConfig.key === key && sortConfig.direction === 'asc' 
+          ? 'desc' 
+          : 'asc',
+    });
   };
 
-  const tableData = Object.entries(aggregatedData).map(([key, values]) => {
-    const stats = calculateStatistics(values);
-    return { key, ...stats };
-  }).sort((a, b) => b.sum - a.sum);
-
-  // Limitar las filas mostradas
   const displayedData = showAll ? tableData : tableData.slice(0, 7);
 
   return (
     <div className="flex flex-col h-full">
-      <div className="table-container flex-1">
-        <table className="min-w-full bg-white table-fixed">
-          <thead className="sticky top-0 bg-gray-200 z-10">
-            <tr className="text-gray-600 uppercase text-sm leading-normal">
-              <th className="py-3 px-6 text-left w-1/8">{xAxis}</th>
-              <th className="py-3 px-6 text-left w-1/8">Sum</th>
-              <th className="py-3 px-6 text-left w-1/8">Avg</th>
-              <th className="py-3 px-6 text-left w-1/8">Min</th>
-              <th className="py-3 px-6 text-left w-1/8">Max</th>
-              <th className="py-3 px-6 text-left w-1/8">Count</th>
-              <th className="py-3 px-6 text-left w-1/8">Median</th>
-              <th className="py-3 px-6 text-left w-1/8">Mode</th>
-            </tr>
-          </thead>
-          <tbody className="text-gray-600 text-sm">
-            {displayedData.map((row, index) => (
-              <tr key={index} className="border-b border-gray-200 hover:bg-gray-100">
-                <td className="py-3 px-6 text-left whitespace-nowrap">{row.key}</td>
-                <td className="py-3 px-6 text-left whitespace-nowrap">{row.sum.toFixed(2)}</td>
-                <td className="py-3 px-6 text-left whitespace-nowrap">{row.avg.toFixed(2)}</td>
-                <td className="py-3 px-6 text-left whitespace-nowrap">{row.min.toFixed(2)}</td>
-                <td className="py-3 px-6 text-left whitespace-nowrap">{row.max.toFixed(2)}</td>
-                <td className="py-3 px-6 text-left whitespace-nowrap">{row.count}</td>
-                <td className="py-3 px-6 text-left whitespace-nowrap">{row.median.toFixed(2)}</td>
-                <td className="py-3 px-6 text-left whitespace-nowrap">{row.mode}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="overflow-x-auto">
+        <div className="align-middle inline-block min-w-full">
+          <div className="overflow-hidden border border-gray-200 rounded-lg">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  {Object.keys(tableData[0] || {}).map((header) => (
+                    <th
+                      key={header}
+                      onClick={() => handleSort(header as keyof TableData)}
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                    >
+                      <div className="flex items-center gap-2">
+                        {header}
+                        {sortConfig.key === header && (
+                          sortConfig.direction === 'asc' ? <ChevronUp size={14} /> : <ChevronDown size={14} />
+                        )}
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {displayedData.map((row, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.key}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.sum.toFixed(2)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.avg.toFixed(2)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.min.toFixed(2)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.max.toFixed(2)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.count}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.median.toFixed(2)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{row.mode}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
-      <div className="mt-4 text-center">
-        <button
-          onClick={() => setShowAll(!showAll)}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors"
-        >
-          {showAll ? 'Show Less' : 'Show All Rows'}
-        </button>
-      </div>
+      {tableData.length > 7 && (
+        <div className="mt-4 flex justify-center">
+          <button
+            onClick={() => setShowAll(!showAll)}
+            className="inline-flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+          >
+            {showAll ? (
+              <>
+                <ChevronUp className="mr-2 h-4 w-4" />
+                Show Less
+              </>
+            ) : (
+              <>
+                <ChevronDown className="mr-2 h-4 w-4" />
+                Show All ({tableData.length} rows)
+              </>
+            )}
+          </button>
+        </div>
+      )}
     </div>
   );
 };
