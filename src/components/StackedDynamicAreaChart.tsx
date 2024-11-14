@@ -9,8 +9,9 @@ import {
   Tooltip,
   Legend,
   PointElement,
-  Filler, // Importa Filler para el área apilada
+  Filler,
 } from 'chart.js';
+import { useTheme } from '../context/ThemeContext';
 
 ChartJS.register(
   CategoryScale,
@@ -20,17 +21,18 @@ ChartJS.register(
   Tooltip,
   Legend,
   PointElement,
-  Filler // Registra Filler
+  Filler
 );
 
 interface StackedDynamicAreaChartProps {
   data: Array<Record<string, string>>;
   xAxis: string;
   yAxis: string;
-  theme: string;
 }
 
-const StackedDynamicAreaChart: React.FC<StackedDynamicAreaChartProps> = ({ data, xAxis, yAxis, theme }) => {
+const StackedDynamicAreaChart: React.FC<StackedDynamicAreaChartProps> = ({ data, xAxis, yAxis }) => {
+  const { theme } = useTheme();
+
   const aggregatedData: Record<string, number[]> = {};
 
   data.forEach((row) => {
@@ -50,11 +52,11 @@ const StackedDynamicAreaChart: React.FC<StackedDynamicAreaChartProps> = ({ data,
       {
         label: `${yAxis} (Stacked Area)`,
         data: Object.values(aggregatedData).map(values => values.reduce((a, b) => a + b, 0)),
-        fill: true, // Habilita el llenado del área
-        backgroundColor: 'rgba(75, 192, 192, 0.6)',
-        borderColor: 'rgba(75, 192, 192, 1)',
+        fill: true,
+        backgroundColor: theme === 'dark' ? 'rgba(75, 192, 192, 0.3)' : 'rgba(75, 192, 192, 0.6)',
+        borderColor: theme === 'dark' ? 'rgba(75, 192, 192, 0.8)' : 'rgba(75, 192, 192, 1)',
         borderWidth: 2,
-        tension: 0.4, // Suaviza la línea
+        tension: 0.4,
       },
     ],
   };
@@ -65,13 +67,20 @@ const StackedDynamicAreaChart: React.FC<StackedDynamicAreaChartProps> = ({ data,
       legend: {
         position: 'top' as const,
         labels: {
-          color: theme === 'dark' ? '#e5e7eb' : '#1f2937'
+          color: theme === 'dark' ? '#e5e7eb' : '#1f2937',
+          font: {
+            family: "'Cabinet Grotesk', sans-serif"
+          }
         }
       },
       title: {
         display: true,
         text: `${xAxis} vs ${yAxis} (Stacked Area)`,
-        color: theme === 'dark' ? '#e5e7eb' : '#1f2937'
+        color: theme === 'dark' ? '#e5e7eb' : '#1f2937',
+        font: {
+          family: "'Cabinet Grotesk', sans-serif",
+          size: 16
+        }
       },
     },
     scales: {
@@ -81,7 +90,10 @@ const StackedDynamicAreaChart: React.FC<StackedDynamicAreaChartProps> = ({ data,
           color: theme === 'dark' ? '#374151' : '#e5e7eb'
         },
         ticks: {
-          color: theme === 'dark' ? '#e5e7eb' : '#1f2937'
+          color: theme === 'dark' ? '#e5e7eb' : '#1f2937',
+          font: {
+            family: "'Cabinet Grotesk', sans-serif"
+          }
         }
       },
       x: {
@@ -89,10 +101,13 @@ const StackedDynamicAreaChart: React.FC<StackedDynamicAreaChartProps> = ({ data,
           color: theme === 'dark' ? '#374151' : '#e5e7eb'
         },
         ticks: {
-          color: theme === 'dark' ? '#e5e7eb' : '#1f2937'
+          color: theme === 'dark' ? '#e5e7eb' : '#1f2937',
+          font: {
+            family: "'Cabinet Grotesk', sans-serif"
+          }
         }
       }
-    },
+    }
   };
 
   return <Line data={chartData} options={options} />;

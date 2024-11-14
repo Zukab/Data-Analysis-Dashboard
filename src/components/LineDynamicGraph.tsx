@@ -8,8 +8,9 @@ import {
   Title,
   Tooltip,
   Legend,
-  PointElement, // Asegúrate de importar PointElement
+  PointElement,
 } from 'chart.js';
+import { useTheme } from '../context/ThemeContext';
 
 ChartJS.register(
   CategoryScale,
@@ -18,17 +19,18 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  PointElement // Registra PointElement
+  PointElement
 );
 
 interface LineDynamicGraphProps {
   data: Array<Record<string, string>>;
   xAxis: string;
   yAxis: string;
-  theme: string;
 }
 
-const LineDynamicGraph: React.FC<LineDynamicGraphProps> = ({ data, xAxis, yAxis, theme }) => {
+const LineDynamicGraph: React.FC<LineDynamicGraphProps> = ({ data, xAxis, yAxis }) => {
+  const { theme } = useTheme();
+
   const aggregatedData: Record<string, number[]> = {};
 
   data.forEach((row) => {
@@ -48,10 +50,9 @@ const LineDynamicGraph: React.FC<LineDynamicGraphProps> = ({ data, xAxis, yAxis,
       {
         label: `${yAxis} (Line)`,
         data: Object.values(aggregatedData).map(values => values.reduce((a, b) => a + b, 0)),
-        fill: false,
-        backgroundColor: 'rgba(75, 192, 192, 0.6)',
         borderColor: 'rgba(75, 192, 192, 1)',
-        borderWidth: 2,
+        backgroundColor: 'rgba(75, 192, 192, 0.5)',
+        tension: 0.4,
       },
     ],
   };
