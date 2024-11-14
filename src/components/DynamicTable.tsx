@@ -134,26 +134,19 @@ const DynamicTable: React.FC<DynamicTableProps> = ({ data, xAxis, yAxis }) => {
           </div>
         </div>
       </div>
-      {tableData.length > 7 && (
-        <div className="mt-4 flex justify-center">
-          <button
-            onClick={() => setShowAll(!showAll)}
-            className="inline-flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
-          >
-            {showAll ? (
-              <>
-                <ChevronUp className="mr-2 h-4 w-4" />
-                Show Less
-              </>
-            ) : (
-              <>
-                <ChevronDown className="mr-2 h-4 w-4" />
-                Show All ({tableData.length} rows)
-              </>
-            )}
-          </button>
-        </div>
-      )}
+      <div className="flex justify-between items-center mt-4">
+        <button
+          onClick={() => setShowAll(!showAll)}
+          className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+        >
+          {showAll ? 'Show Less' : `Show All (${tableData.length} rows)`}
+        </button>
+        {!showAll && (
+          <span className="text-sm text-gray-500 dark:text-gray-400">
+            Showing {displayedData.length} of {tableData.length} rows
+          </span>
+        )}
+      </div>
     </div>
   );
 };
