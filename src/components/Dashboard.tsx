@@ -132,7 +132,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, headers }) => {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
             X Axis
@@ -166,7 +166,7 @@ const Dashboard: React.FC<DashboardProps> = ({ data, headers }) => {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
             Add Widget
           </label>
           <select
