@@ -27,9 +27,10 @@ interface StackedDynamicAreaChartProps {
   data: Array<Record<string, string>>;
   xAxis: string;
   yAxis: string;
+  theme: string;
 }
 
-const StackedDynamicAreaChart: React.FC<StackedDynamicAreaChartProps> = ({ data, xAxis, yAxis }) => {
+const StackedDynamicAreaChart: React.FC<StackedDynamicAreaChartProps> = ({ data, xAxis, yAxis, theme }) => {
   const aggregatedData: Record<string, number[]> = {};
 
   data.forEach((row) => {
@@ -63,16 +64,34 @@ const StackedDynamicAreaChart: React.FC<StackedDynamicAreaChartProps> = ({ data,
     plugins: {
       legend: {
         position: 'top' as const,
+        labels: {
+          color: theme === 'dark' ? '#e5e7eb' : '#1f2937'
+        }
       },
       title: {
         display: true,
         text: `${xAxis} vs ${yAxis} (Stacked Area)`,
+        color: theme === 'dark' ? '#e5e7eb' : '#1f2937'
       },
     },
     scales: {
       y: {
         beginAtZero: true,
+        grid: {
+          color: theme === 'dark' ? '#374151' : '#e5e7eb'
+        },
+        ticks: {
+          color: theme === 'dark' ? '#e5e7eb' : '#1f2937'
+        }
       },
+      x: {
+        grid: {
+          color: theme === 'dark' ? '#374151' : '#e5e7eb'
+        },
+        ticks: {
+          color: theme === 'dark' ? '#e5e7eb' : '#1f2937'
+        }
+      }
     },
   };
 

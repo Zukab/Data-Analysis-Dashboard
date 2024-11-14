@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
+import { Upload } from 'lucide-react';
 
 interface CSVUploaderProps {
   onUpload: (data: Array<Record<string, string>>, headers: string[]) => void;
@@ -119,32 +120,24 @@ const CSVUploader: React.FC<CSVUploaderProps> = ({ onUpload, setCSVData, setHead
       {!uploadedFileName ? (
         <div
           {...getRootProps()}
-          className="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100"
+          className={`flex flex-col items-center justify-center w-full h-32 px-4 transition bg-white dark:bg-[#1e1e1e] border-2 border-gray-300 dark:border-gray-700 border-dashed rounded-lg hover:bg-gray-50 dark:hover:bg-[#252525] ${
+            isDragActive ? 'border-blue-500 dark:border-blue-400' : ''
+          }`}
         >
           <input {...getInputProps()} />
           <div className="flex flex-col items-center justify-center pt-5 pb-6">
-            <svg
-              className="w-10 h-10 mb-3 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-              ></path>
-            </svg>
+            <Upload 
+              className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
+              aria-hidden="true"
+            />
             {isDragActive ? (
-              <p className="text-sm text-gray-500">Suelta el archivo aquí...</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Suelta el archivo aquí...</p>
             ) : (
               <>
-                <p className="mb-2 text-sm text-gray-500">
+                <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
                   <span className="font-semibold">Click to upload</span> or drag and drop
                 </p>
-                <p className="text-xs text-gray-500">CSV or Excel file (MAX. 10MB)</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">CSV or Excel file (MAX. 10MB)</p>
               </>
             )}
           </div>

@@ -21,17 +21,17 @@ const DataTable: React.FC<DataTableProps> = ({ data, headers }) => {
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full bg-white">
+      <table className="min-w-full bg-white dark:bg-[#1e1e1e]">
         <thead>
-          <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+          <tr className="bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-300 uppercase text-sm leading-normal">
             {headers.map((header, index) => (
               <th key={index} className="py-3 px-6 text-left">{header}</th>
             ))}
           </tr>
         </thead>
-        <tbody className="text-gray-600 text-sm font-light">
+        <tbody className="text-gray-600 dark:text-gray-300 text-sm font-light">
           {currentItems.map((row, rowIndex) => (
-            <tr key={rowIndex} className="border-b border-gray-200 hover:bg-gray-100">
+            <tr key={rowIndex} className="border-b border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800">
               {headers.map((header, cellIndex) => (
                 <td key={cellIndex} className="py-3 px-6 text-left whitespace-nowrap">
                   {row[header]}
@@ -49,7 +49,7 @@ const DataTable: React.FC<DataTableProps> = ({ data, headers }) => {
             className={`mx-1 px-3 py-1 rounded ${
               currentPage === page
                 ? 'bg-blue-500 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
             }`}
           >
             {page}

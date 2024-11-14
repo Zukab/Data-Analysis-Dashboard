@@ -25,9 +25,10 @@ interface LineDynamicGraphProps {
   data: Array<Record<string, string>>;
   xAxis: string;
   yAxis: string;
+  theme: string;
 }
 
-const LineDynamicGraph: React.FC<LineDynamicGraphProps> = ({ data, xAxis, yAxis }) => {
+const LineDynamicGraph: React.FC<LineDynamicGraphProps> = ({ data, xAxis, yAxis, theme }) => {
   const aggregatedData: Record<string, number[]> = {};
 
   data.forEach((row) => {
@@ -60,17 +61,35 @@ const LineDynamicGraph: React.FC<LineDynamicGraphProps> = ({ data, xAxis, yAxis 
     plugins: {
       legend: {
         position: 'top' as const,
+        labels: {
+          color: theme === 'dark' ? '#e5e7eb' : '#1f2937'
+        }
       },
       title: {
         display: true,
         text: `${xAxis} vs ${yAxis} (Line)`,
+        color: theme === 'dark' ? '#e5e7eb' : '#1f2937'
       },
     },
     scales: {
       y: {
         beginAtZero: true,
+        grid: {
+          color: theme === 'dark' ? '#374151' : '#e5e7eb'
+        },
+        ticks: {
+          color: theme === 'dark' ? '#e5e7eb' : '#1f2937'
+        }
       },
-    },  
+      x: {
+        grid: {
+          color: theme === 'dark' ? '#374151' : '#e5e7eb'
+        },
+        ticks: {
+          color: theme === 'dark' ? '#e5e7eb' : '#1f2937'
+        }
+      }
+    },
   };
 
   return <Line data={chartData} options={options} />;

@@ -9,6 +9,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
+import { useTheme } from '../context/ThemeContext';
 
 ChartJS.register(
   CategoryScale,
@@ -26,6 +27,8 @@ interface DynamicChartProps {
 }
 
 const DynamicChart: React.FC<DynamicChartProps> = ({ data, xAxis, yAxis }) => {
+  const { theme } = useTheme();
+
   const aggregatedData: Record<string, number> = {};
 
   data.forEach((row) => {
@@ -58,16 +61,34 @@ const DynamicChart: React.FC<DynamicChartProps> = ({ data, xAxis, yAxis }) => {
     plugins: {
       legend: {
         position: 'top' as const,
+        labels: {
+          color: theme === 'dark' ? '#e5e7eb' : '#1f2937'
+        }
       },
       title: {
         display: true,
         text: `${xAxis} vs ${yAxis} (Sum)`,
+        color: theme === 'dark' ? '#e5e7eb' : '#1f2937'
       },
     },
     scales: {
       y: {
         beginAtZero: true,
+        grid: {
+          color: theme === 'dark' ? '#374151' : '#e5e7eb'
+        },
+        ticks: {
+          color: theme === 'dark' ? '#e5e7eb' : '#1f2937'
+        }
       },
+      x: {
+        grid: {
+          color: theme === 'dark' ? '#374151' : '#e5e7eb'
+        },
+        ticks: {
+          color: theme === 'dark' ? '#e5e7eb' : '#1f2937'
+        }
+      }
     },
   };
 

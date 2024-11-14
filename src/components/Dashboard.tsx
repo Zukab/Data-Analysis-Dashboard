@@ -1,11 +1,85 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { createSwapy } from 'swapy';
+import React, { useState, useEffect } from 'react';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, rectSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import DynamicTable from './DynamicTable';
 import DynamicChart from './DynamicChart';
 import LineDynamicGraph from './LineDynamicGraph';
 import StackedDynamicAreaChart from './StackedDynamicAreaChart';
 import { GripVertical } from 'lucide-react';
 import Modal from './Modal';
+
+interface SortableWidgetProps {
+  widget: {
+    id: string;
+    type: string;
+    title: string;
+  };
+  onExpand: (widget: any) => void;
+  onRemove: (id: string) => void;
+  data: Array<Record<string, string>>;
+  xAxis: string;
+  yAxis: string;
+}
+
+const SortableWidget: React.FC<SortableWidgetProps> = ({ widget, onExpand, onRemove, data, xAxis, yAxis }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id: widget.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  return (
+    <div 
+      ref={setNodeRef}
+      style={style}
+      className="bg-white dark:bg-[#1e1e1e] rounded-lg shadow-md"
+    >
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center gap-2">
+          <div 
+            {...attributes}
+            {...listeners}
+            className="cursor-move p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+          >
+            <GripVertical className="text-gray-400 dark:text-gray-600" />
+          </div>
+          <h3 className="font-medium text-gray-900 dark:text-gray-100">
+            {widget.title}
+          </h3>
+        </div>
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => onExpand(widget)}
+            className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors text-sm"
+          >
+            Expand
+          </button>
+          <span className="text-gray-300 dark:text-gray-600">|</span>
+          <button 
+            onClick={() => onRemove(widget.id)}
+            className="text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 transition-colors text-sm"
+          >
+            Remove
+          </button>
+        </div>
+      </div>
+      <div className="p-4 h-[300px] overflow-auto widget-content">
+        {widget.type === 'table' && <DynamicTable data={data} xAxis={xAxis} yAxis={yAxis} />}
+        {widget.type === 'chart' && <DynamicChart data={data} xAxis={xAxis} yAxis={yAxis} />}
+        {widget.type === 'line' && <LineDynamicGraph data={data} xAxis={xAxis} yAxis={yAxis} />}
+        {widget.type === 'stackedArea' && <StackedDynamicAreaChart data={data} xAxis={xAxis} yAxis={yAxis} />}
+      </div>
+    </div>
+  );
+};
 
 interface DashboardProps {
   data: Array<Record<string, string>>;
@@ -16,9 +90,27 @@ const Dashboard: React.FC<DashboardProps> = ({ data, headers }) => {
   const [xAxis, setXAxis] = useState(headers[0]);
   const [yAxis, setYAxis] = useState(headers[1]);
   const [widgets, setWidgets] = useState<{ id: string; type: string; title: string }[]>([]);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const swapyRef = useRef<any>(null);
   const [modalContent, setModalContent] = useState<{ isOpen: boolean; type: string; title: string } | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+    
+    if (active.id !== over.id) {
+      setWidgets((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
 
   useEffect(() => {
     const savedWidgets = localStorage.getItem('dashboardWidgets');
@@ -31,47 +123,6 @@ const Dashboard: React.FC<DashboardProps> = ({ data, headers }) => {
     localStorage.setItem('dashboardWidgets', JSON.stringify(widgets));
   }, [widgets]);
 
-  useEffect(() => {
-    if (containerRef.current && widgets.length > 0) {
-      if (swapyRef.current) {
-        swapyRef.current.enable(false);
-        swapyRef.current = null;
-      }
-      
-      const swapyInstance = createSwapy(containerRef.current, {
-        animation: 'none',
-        handle: '[data-swapy-handle]',
-        dragThreshold: 5,
-        debounce: 10,
-        resistance: 0
-      });
-
-      let timeoutId: NodeJS.Timeout;
-      swapyInstance.onSwap((event: any) => {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => {
-          const newOrder = event.data.array
-            .map((item: { item: string }) => widgets.find(w => w.id === item.item))
-            .filter(Boolean);
-          
-          if (newOrder.length === widgets.length) {
-            setWidgets(newOrder);
-          }
-        }, 50);
-      });
-
-      swapyRef.current = swapyInstance;
-
-      return () => {
-        clearTimeout(timeoutId);
-        if (swapyRef.current) {
-          swapyRef.current.enable(false);
-          swapyRef.current = null;
-        }
-      };
-    }
-  }, [widgets.length]);
-
   const addWidget = (type: string) => {
     if (!type) return;
     const newId = `widget-${Date.now()}`;
@@ -80,107 +131,82 @@ const Dashboard: React.FC<DashboardProps> = ({ data, headers }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-2xl font-bold mb-6">Data Analysis Dashboard</h2>
-      
+    <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
             X Axis
           </label>
           <select
             value={xAxis}
             onChange={(e) => setXAxis(e.target.value)}
-            className="w-full p-2 border rounded-md"
+            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
           >
             {headers.map((header) => (
-              <option key={header} value={header}>{header}</option>
+              <option key={header} value={header} className="text-gray-900 dark:text-gray-200">
+                {header}
+              </option>
             ))}
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
             Y Axis
           </label>
           <select
             value={yAxis}
             onChange={(e) => setYAxis(e.target.value)}
-            className="w-full p-2 border rounded-md"
+            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
           >
             {headers.map((header) => (
-              <option key={header} value={header}>{header}</option>
+              <option key={header} value={header} className="text-gray-900 dark:text-gray-200">
+                {header}
+              </option>
             ))}
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
             Add Widget
           </label>
           <select
             onChange={(e) => addWidget(e.target.value)}
             value=""
-            className="w-full p-2 border rounded-md"
+            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
           >
-            <option value="">Select type...</option>
-            <option value="table">Table</option>
-            <option value="chart">Bar Chart</option>
-            <option value="line">Line Chart</option>
-            <option value="stackedArea">Stacked Area</option>
+            <option value="" className="text-gray-900 dark:text-gray-200">Select type...</option>
+            <option value="table" className="text-gray-900 dark:text-gray-200">Table</option>
+            <option value="chart" className="text-gray-900 dark:text-gray-200">Bar Chart</option>
+            <option value="line" className="text-gray-900 dark:text-gray-200">Line Chart</option>
+            <option value="stackedArea" className="text-gray-900 dark:text-gray-200">Stacked Area</option>
           </select>
         </div>
       </div>
 
-      <div ref={containerRef} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {widgets.map((widget, index) => (
-          <div
-            key={widget.id}
-            data-swapy-slot={`slot-${index}`}
-            className="bg-white border rounded-lg shadow-sm hover:shadow-md transition-shadow"
-          >
-            <div
-              data-swapy-item={widget.id}
-              className="w-full h-full flex flex-col"
-            >
-              <div className="p-3 border-b bg-gray-50 rounded-t-lg flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div data-swapy-handle className="touch-none cursor-move">
-                    <GripVertical className="text-gray-400" />
-                  </div>
-                  <h3 className="font-medium text-gray-700">{widget.title}</h3>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setModalContent({ isOpen: true, type: widget.type, title: widget.title })}
-                    className="text-gray-600 hover:text-blue-600 transition-colors text-sm"
-                  >
-                    Expand
-                  </button>
-                  <span className="text-gray-300">|</span>
-                  <button
-                    onClick={() => {
-                      const newWidgets = widgets.filter(w => w.id !== widget.id);
-                      setWidgets(newWidgets);
-                    }}
-                    className="text-gray-600 hover:text-red-600 transition-colors text-sm"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
-              <div className="p-4 h-[300px] overflow-auto widget-content">
-                {widget.type === 'table' && (
-                  <div className="table-wrapper">
-                    <DynamicTable data={data} xAxis={xAxis} yAxis={yAxis} />
-                  </div>
-                )}
-                {widget.type === 'chart' && <DynamicChart data={data} xAxis={xAxis} yAxis={yAxis} />}
-                {widget.type === 'line' && <LineDynamicGraph data={data} xAxis={xAxis} yAxis={yAxis} />}
-                {widget.type === 'stackedArea' && <StackedDynamicAreaChart data={data} xAxis={xAxis} yAxis={yAxis} />}
-              </div>
-            </div>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext 
+          items={widgets.map(w => w.id)}
+          strategy={rectSortingStrategy}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {widgets.map((widget) => (
+              <SortableWidget 
+                key={widget.id} 
+                widget={widget}
+                data={data}
+                xAxis={xAxis}
+                yAxis={yAxis}
+                onExpand={(widget) => setModalContent({ isOpen: true, type: widget.type, title: widget.title })}
+                onRemove={(id) => setWidgets(widgets.filter(w => w.id !== id))}
+              />
+            ))}
           </div>
-        ))}
-      </div>
+        </SortableContext>
+      </DndContext>
 
       {modalContent && (
         <Modal
